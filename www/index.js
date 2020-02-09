@@ -13,7 +13,7 @@ const ctx = canvas.getContext("2d");
 const cellsPtr = grid.cells();
 
 const drawCells = function() {
-  const cells = new Float64Array(memory.buffer, cellsPtr, width * height);  
+  const cells = new Float64Array(memory.buffer, cellsPtr, width * height);
   for (var i = 0; i < cells.length; i++) {
     const [x, y] = [i % width, i / width];
     ctx.fillStyle = `hsl(${parseInt((cells[i] + 0.5) * 360)}deg, 70%, 50%)`;
