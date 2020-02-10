@@ -3,7 +3,7 @@ import {memory} from "wasm-noise/wasm_noise_bg";
 
 const width = parseInt(window.innerWidth / 4);
 const height = parseInt(window.innerHeight / 4);
-const grid = NoiseGrid.new(width, height, 0.0125, 0.0125);
+const grid = NoiseGrid.new(width, height, 0.025, 0.005);
 const canvas = document.getElementById("render-canvas");
 const fps = document.getElementById("fps");
 canvas.width = width;
@@ -11,10 +11,8 @@ canvas.height = height;
 const ctx = canvas.getContext("2d");
 
 const drawCells = function() {
-  const cellsPtr = grid.image_data();
-  const cells = new Uint8Array(memory.buffer, cellsPtr, width * height * 4);  
   const imageData = ctx.createImageData(width, height);
-  imageData.data.set(cells);
+  imageData.data.set(new Uint8Array(memory.buffer, grid.image_data(), width * height * 4));
   ctx.putImageData(imageData, 0, 0);
 }
 

@@ -1,4 +1,5 @@
 // mod utils;
+use color::{Deg, Hsv, ToRgb};
 use noise::{NoiseFn, Perlin};
 use wasm_bindgen::prelude::*;
 
@@ -44,13 +45,13 @@ impl NoiseGrid {
         let _z = self.z + self.speed;
         let _imgdata = (0..self.width * self.height)
             .flat_map(|i| {
-                let x = i % self.width;
-                let y = i / self.height;
-                let n = self
-                    .noise
-                    .get([(x as f64) * self.scale, (y as f64) * self.scale, _z]);
-                let v = ((n + 0.5) * 255.0) as u8;
-                return vec![v, v, v, 255];
+                let n = self.noise.get([
+                    ((i % self.width) as f64) * self.scale,
+                    ((i / self.height) as f64) * self.scale,
+                    _z,
+                ]);
+                let color = Hsv::new(Deg(n * 360.0), 0.8, 0.8).to_rgb();
+                return vec![color.r, color.g, color.b, 255];
             })
             .collect();
         self.z = _z;
