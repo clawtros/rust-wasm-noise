@@ -1,6 +1,7 @@
 // mod utils;
+use color::Rgb;
 use color::{Deg, Hsv, ToRgb};
-use noise::{NoiseFn, Perlin};
+use noise::{NoiseFn, SuperSimplex};
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -16,16 +17,16 @@ pub struct NoiseGrid {
     z: f64,
     scale: f64,
     speed: f64,
-    noise: Perlin,
+    noise: SuperSimplex,
     image_data: Vec<u8>,
 }
 
 #[wasm_bindgen]
 impl NoiseGrid {
     pub fn new(width: u32, height: u32, speed: f64, scale: f64) -> NoiseGrid {
-        let noise = Perlin::new();
+        let noise = SuperSimplex::new();
         let z = 0.0;
-        let image_data = (0..width * height * 4).map(|_| return 0).collect();
+        let image_data = vec![];
         return NoiseGrid {
             width,
             height,
@@ -35,6 +36,10 @@ impl NoiseGrid {
             noise,
             image_data,
         };
+    }
+
+    pub fn set_scale(&mut self, scale:f64) {
+        self.scale = scale;
     }
 
     pub fn image_data(&self) -> *const u8 {
@@ -50,8 +55,11 @@ impl NoiseGrid {
                     ((i / self.height) as f64) * self.scale,
                     _z,
                 ]);
-                let color = Hsv::new(Deg(n * 360.0), 0.8, 0.8).to_rgb();
-                return vec![color.r, color.g, color.b, 255];
+                let color:Rgb<u8> = Hsv::new(Deg(n * 90.0), 2.0, 15.0).to_rgb();
+                let s = ((color.r + color.g + color.b) / 3 > 64) as u8 * 255;
+                // let s = (n > 0.) as u8 * 255;
+                return vec![s, s, s, 255];
+                //return vec![color.r, color.g, color.b, 255];
             })
             .collect();
         self.z = _z;

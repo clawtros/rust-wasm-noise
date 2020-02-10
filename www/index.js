@@ -3,7 +3,7 @@ import {memory} from "wasm-noise/wasm_noise_bg";
 
 const width = parseInt(window.innerWidth / 4);
 const height = parseInt(window.innerHeight / 4);
-const grid = NoiseGrid.new(width, height, 0.025, 0.005);
+const grid = NoiseGrid.new(width, height, 0.005, 0.025 / 16);
 const canvas = document.getElementById("render-canvas");
 const fps = document.getElementById("fps");
 canvas.width = width;
@@ -19,7 +19,7 @@ const drawCells = function() {
 let lastDelta = 0;
 const renderLoop = function (delta) {
   requestAnimationFrame(renderLoop);
-
+  grid.set_scale(0.0005 - (Math.sin(delta * 0.0005) + 1.5) / 90);
   grid.tick();
   drawCells();
 
