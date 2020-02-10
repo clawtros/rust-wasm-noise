@@ -16,7 +16,7 @@ pub struct NoiseGrid {
     scale: f64,
     speed: f64,
     noise: Perlin,
-    cells: Vec<f64>,
+    image_data: Vec<u8>,
 }
 
 #[wasm_bindgen]
@@ -24,11 +24,7 @@ impl NoiseGrid {
     pub fn new(width: u32, height: u32, speed: f64, scale: f64) -> NoiseGrid {
         let noise = Perlin::new();
         let z = 0.0;
-        let cells = (0..width * height)
-            .map(|_i| {
-                return 0.0;
-            })
-            .collect();
+        let image_data = (0..width * height * 4).map(|_| return 0).collect();
         return NoiseGrid {
             width,
             height,
@@ -36,26 +32,28 @@ impl NoiseGrid {
             speed,
             scale,
             noise,
-            cells,
+            image_data,
         };
     }
 
-    pub fn cells(&self) -> *const f64 {
-        return self.cells.as_ptr();
+    pub fn image_data(&self) -> *const u8 {
+        return self.image_data.as_ptr();
     }
 
     pub fn tick(&mut self) {
         let _z = self.z + self.speed;
-        let cells = (0..self.width * self.height)
-            .map(|i| {
+        let _imgdata = (0..self.width * self.height)
+            .flat_map(|i| {
                 let x = i % self.width;
                 let y = i / self.height;
-                return self
+                let n = self
                     .noise
-                    .get([f64::from(x) * self.scale, f64::from(y) * self.scale, _z]);
+                    .get([(x as f64) * self.scale, (y as f64) * self.scale, _z]);
+                let v = ((n + 0.5) * 255.0) as u8;
+                return vec![v, v, v, 255];
             })
             .collect();
         self.z = _z;
-        self.cells = cells;
+        self.image_data = _imgdata;
     }
 }
