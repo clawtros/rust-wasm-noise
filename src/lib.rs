@@ -1,4 +1,5 @@
 // mod utils;
+use color::{Deg, Hsv, Rgb, ToRgb};
 use noise::{NoiseFn, SuperSimplex};
 use wasm_bindgen::prelude::*;
 
@@ -44,7 +45,7 @@ impl NoiseGrid {
 
     pub fn tick(&mut self, speed: f64) {
         let _z = self.z + speed;
-        let _imgdata = (0..self.width * self.height)
+        let _imgdata: Vec<u8> = (0..self.width * self.height)
             .flat_map(|i| {
                 let n = self.noise.get([
                     ((i % self.width + self.width) as f64) * self.scale,

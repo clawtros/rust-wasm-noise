@@ -14,10 +14,10 @@ const canvas = document.getElementById("render-canvas");
 canvas.width = width;
 canvas.height = height;
 const ctx = canvas.getContext("2d");
-const cellsPtr = grid.cells();
 
 const drawCells = function() {
-  const imageData = ctx.getImageData(0,0,width, height);
+  
+  const imageData = ctx.getImageData(0,0, width, height);
   imageData.data.set(new Uint8Array(memory.buffer, grid.image_data(), width * height * 4));
   ctx.putImageData(imageData, 0, 0);
 }
