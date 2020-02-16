@@ -3,25 +3,28 @@
   <head>
     <meta charset="utf-8">
     <title>wasm playin</title>
-    <style>
-      body { margin: 0;}
-      canvas {
-        height: 100vh;
-      }
-      #fps {
-        font-family: monospace;
-        padding: 5px;
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background-color: white;
-        z-index: 100;
-      }
-    </style>
   </head>
   <body>
+    <script>
+    </script>
     <canvas id="render-canvas"></canvas>
-    <div id="fps">hello</div>
+    <pre id="fps"></pre>
     <script src="./bootstrap.js"></script>
   </body>
+  <style>
+    body { margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh}
+    canvas {
+      width: calc(100vw - 50px);
+    }
+    #fps {
+      font-family: monospace;
+      padding: 5px;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: white;
+      z-index: 100;
+    }
+  </style>
+
 </html>
