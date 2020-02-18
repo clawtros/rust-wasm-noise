@@ -16,6 +16,7 @@ pub struct NoiseGrid {
     z: f64,
     scale: f64,
     noise: SuperSimplex,
+    audio_level: f64,
     image_data: Vec<u8>,
 }
 
@@ -25,18 +26,24 @@ impl NoiseGrid {
         let noise = SuperSimplex::new();
         let z = 0.0;
         let image_data = vec![];
+        let audio_level = 0.0;
         return NoiseGrid {
             width,
             height,
             z,
             scale,
             noise,
+            audio_level,
             image_data,
         };
     }
 
     pub fn set_scale(&mut self, scale: f64) {
         self.scale = scale;
+    }
+
+    pub fn set_audio_level(&mut self, audio_level: f64) {
+        self.audio_level = audio_level;
     }
 
     pub fn image_data(&self) -> *const u8 {
@@ -52,13 +59,19 @@ impl NoiseGrid {
                     ((i / self.height + self.height) as f64) * self.scale,
                     _z,
                 ]);
-                let color: Rgb<u8> = Hsv::new(Deg(n * 360.0), 0.9, 1.9).to_rgb();
-                //return vec![color.r, color.g, color.b, 255];
+                let color: Rgb<u8> = Hsv::new(
+                    Deg(n * 360.0),
+                    0.7 + self.audio_level,
+                    2.0 + self.audio_level,
+                )
+                .to_rgb();
+                // return vec![color.r, color.g, color.b, 255];
                 let s = ((color.r + color.g + color.b) / 3 > 32) as u8 * 255;
-                //let s = (n > 0.) as u8 * 255;
+                // let s = (n > 0.) as u8 * 255;
                 return vec![s, s, s, 255];
             })
             .collect();
         self.z = _z;
+        self.image_data = _imgdata;
     }
 }
