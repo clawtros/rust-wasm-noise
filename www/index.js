@@ -25,7 +25,7 @@ const handleSuccess = function(stream) {
   const source = context.createMediaStreamSource(stream);
   const analyser = context.createAnalyser();
   source.connect(analyser);
-  analyser.fftSize = 32;
+  analyser.fftSize = 2048;
   state.dataArray = new Uint8Array(analyser.frequencyBinCount);
   state.analyser = analyser;
 };
@@ -33,37 +33,34 @@ const handleSuccess = function(stream) {
 var steps = 0;
 var lastV = 0;
 let vs = [];
+let arrays = []
 const renderLoop = function () {
+  canvas.width = width;
   drawCells();
-  
   if (state.analyser) {
     ctx.fillStyle="#ff0000";
-    state.analyser.getByteTimeDomainData(state.dataArray);
-    ctx.moveTo(0, height / 2);
+    let array = new Uint8Array(state.analyser.frequencyBinCount);
+    state.analyser.getByteTimeDomainData(array);
     let sum = 0;
-    let sums = [0,0]
-    for (var i = 0, l = state.dataArray.length; i  < l; i++) {
-      let p = state.dataArray[i];
-      sum += p;
-      sums[parseInt((i / state.dataArray.length) * 2)] += p
+    for (var i = 0, l = array.length; i  < l; i++) {
+      let av = 0;
+      let p = 0;
+      if (arrays.length > 2)  {
+        for (var j = 0; j < arrays.length; j++) {
+          p += arrays[j][i];
+        }
+        p /= (arrays.length - 1);
+      }
       let barwidth = width / l;
-      ctx.lineTo(i * barwidth, p);
-    }
-
-    vs.push((sum / state.dataArray.length - 127));
-    vs = vs.slice(-20);
-    let v = vs.reduce((a,b)=>a+b, 0) / vs.length;
-    grid.tick(v * 0.01);
-    grid.set_audio_level(v * 0.01);
-
-    /* ctx.fillRect(0, 0, sums[0] / 10, 20)
-     * ctx.fillRect(0, 30, sums[1] / 10, 20) */
-    lastV = v;
+      ctx.fillRect(i * barwidth, height, barwidth, p - height);
+    }    
+    arrays.unshift(array);
+    arrays.slice(0, 30);
+    grid.tick(0.0001);
   }
   requestAnimationFrame(renderLoop);
 }
 
 renderLoop();
-
 navigator.mediaDevices.getUserMedia({ audio: true, video: false })
          .then(handleSuccess);
