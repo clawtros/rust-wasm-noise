@@ -4,8 +4,8 @@ import {fps} from "./fps";
 
 const state = {};
 const smod = 4;
-const width = parseInt(window.innerWidth / smod);
-const height = parseInt(window.innerHeight / smod);
+const width = 512; //parseInt(window.innerWidth / smod);
+const height = 512; //parseInt(window.innerHeight / smod);
 const initialScale = 0.00625;
 const grid = NoiseGrid.new(width, height, initialScale);
 const canvas = document.getElementById("render-canvas");
@@ -25,38 +25,51 @@ const handleSuccess = function(stream) {
   const source = context.createMediaStreamSource(stream);
   const analyser = context.createAnalyser();
   source.connect(analyser);
-  analyser.fftSize = 2048;
+  analyser.fftSize = 128;
   state.dataArray = new Uint8Array(analyser.frequencyBinCount);
   state.analyser = analyser;
 };
 
+const audioframes = 5;
 var steps = 0;
 var lastV = 0;
 let vs = [];
 let arrays = []
 const renderLoop = function () {
-  canvas.width = width;
+  fps.render();
+  // canvas.width = width;
   drawCells();
   if (state.analyser) {
-    ctx.fillStyle="#ff0000";
+    let max = -Infinity;
+    let min = Infinity;
+    ctx.fillStyle="#ff0000ff";
     let array = new Uint8Array(state.analyser.frequencyBinCount);
     state.analyser.getByteTimeDomainData(array);
+    arrays.unshift(array);
     let sum = 0;
-    for (var i = 0, l = array.length; i  < l; i++) {
+    
+    let barwidth = width / state.analyser.frequencyBinCount;
+    for (var i = 0, l = state.analyser.frequencyBinCount; i  < l; i++) {
       let av = 0;
       let p = 0;
-      if (arrays.length > 2)  {
-        for (var j = 0; j < arrays.length; j++) {
+      
+      if (arrays.length > audioframes)  {
+        for (var j = 0; j < audioframes; j++) {
           p += arrays[j][i];
+          ctx.fillStyle = `hsl(${parseInt((j * 360) / audioframes)}deg, 70%, 50%)`;
+          ctx.fillRect(i * barwidth, arrays[j][i], barwidth, 10);
         }
-        p /= (arrays.length - 1);
+        p /= audioframes;
       }
-      let barwidth = width / l;
-      ctx.fillRect(i * barwidth, height, barwidth, p - height);
-    }    
-    arrays.unshift(array);
-    arrays.slice(0, 30);
-    grid.tick(0.0001);
+      ctx.fillStyle = `#ffffff`;
+      ctx.fillRect(i * barwidth, p - 3, barwidth, 10);
+      
+      max = Math.max(max, p);
+      min = Math.min(min, p);
+    }
+    arrays = arrays.slice(0, audioframes + 1)
+    grid.tick(0.00125 * (max - min));
+    grid.set_audio_level((max - min) * 0.125);
   }
   requestAnimationFrame(renderLoop);
 }

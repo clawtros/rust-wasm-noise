@@ -17,7 +17,7 @@ pub struct NoiseGrid {
     scale: f64,
     noise: SuperSimplex,
     audio_level: f64,
-    image_data: Vec<u8>,
+    image_data: [u8;65536],
 }
 
 #[wasm_bindgen]
@@ -25,7 +25,7 @@ impl NoiseGrid {
     pub fn new(width: u32, height: u32, scale: f64) -> NoiseGrid {
         let noise = SuperSimplex::new();
         let z = 0.0;
-        let image_data = vec![];
+        let image_data = [0; 65536];
         let audio_level = 0.0;
         return NoiseGrid {
             width,
@@ -52,7 +52,7 @@ impl NoiseGrid {
 
     pub fn tick(&mut self, speed: f64) {
         let _z = self.z + speed;
-        let _imgdata: Vec<u8> = (0..self.width * self.height)
+        let _imgdata = (0..65536)
             .flat_map(|i| {
                 let n = self.noise.get([
                     ((i % self.width + self.width) as f64) * self.scale,
@@ -62,13 +62,13 @@ impl NoiseGrid {
                 let color: Rgb<u8> = Hsv::new(
                     Deg(n * 360.0),
                     0.7 + self.audio_level,
-                    2.0 + self.audio_level,
+                    1.2 + self.audio_level,
                 )
                 .to_rgb();
-                // return vec![color.r, color.g, color.b, 255];
-                let s = ((color.r + color.g + color.b) / 3 > 32) as u8 * 255;
+                return vec![color.r, color.g, color.b, 255];
+                //let s = ((color.r + color.g + color.b) / 3 > 32) as u8 * 255;
                 // let s = (n > 0.) as u8 * 255;
-                return vec![s, s, s, 255];
+                // return vec![s, s, s, 255];
             })
             .collect();
         self.z = _z;
